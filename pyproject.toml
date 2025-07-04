@@ -1,0 +1,38 @@
+[project]
+name = "healthcare-performance-data-platform-etl"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "boto3>=1.38.38",
+    "dask>=2025.5.1",
+    "datasets>=3.6.0",
+    "dbt-core>=1.9.8",
+    "dbt-duckdb>=1.9.3",
+    "huggingface-hub>=0.33.0",
+    "scikit-learn>=1.7.0",
+    "jupyter>=1.1.1",
+    "papermill>=2.6.0",
+    "pytest>=8.4.1",
+    "pyspark==3.4.4",
+    "delta-spark==2.4.0",
+    "dbt-snowflake>=1.9.2",
+]
+
+[dependency-groups]
+dev = [
+    "apache-airflow==2.7.1",
+    "jupysql>=0.10.17",
+    "pygwalker>=0.4.9.14",
+    "apache-airflow>=2.7.1",
+    "pendulum>=2.1.2",
+    "jupyter>=1.1.1",
+    "jupyterlab>=4.3.4",
+    "jupyterlab-code-formatter>=3.0.2",
+    "jupyter-resource-usage>=1.1.1",
+    "python-lsp-server[all]>=1.12.2",
+    "jupyterlab-lsp>=5.1.0",
+    "jupyterlab-git>=0.51.0",
+    "jupyterlab-search-replace>=1.1.0",
+]

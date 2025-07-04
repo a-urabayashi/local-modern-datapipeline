@@ -1,0 +1,117 @@
+x-airflow-common:
+  &airflow-common
+  # image: apache/airflow:2.9.1-python3.10
+  build: 
+    context: .
+  env_file:
+    - .env
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__FERNET_KEY: '${AIRFLOW_SECRET_KEY:-}'
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-airflow}:${POSTGRES_PASSWORD:-airflow}@postgres/${POSTGRES_DB:-airflow}
+    AIRFLOW__CORE__MAX_MAP_LENGTH: 40000
+    DOCKER_HOST: unix:///var/run/docker.sock
+    # MinIO Configuration
+    MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000}
+    MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+    MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+    MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-datalake}
+    MINIO_REGION: ${MINIO_REGION:-us-east-1}
+    # Logging Configuration
+    LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ENABLE_STRUCTURED_LOGGING: ${ENABLE_STRUCTURED_LOGGING:-true}
+    LOG_FILE_PATH: ${LOG_FILE_PATH:-/opt/airflow/logs/pipeline.log}
+    # Pipeline Configuration
+    ENVIRONMENT: ${ENVIRONMENT:-development}
+    MAX_PARALLEL_TASKS: ${MAX_PARALLEL_TASKS:-8}
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    - ./snowflake_analytics:/opt/airflow/snowflake_analytics  
+    - ./scripts:/opt/airflow/scripts
+    - /var/run/docker.sock:/var/run/docker.sock
+  depends_on:
+    - postgres
+    - minio
+
+services:
+  postgres:
+    image: postgres:14
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-airflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow}
+      POSTGRES_DB: ${POSTGRES_DB:-airflow}
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create --username ${AIRFLOW_ADMIN_USERNAME:-admin} --firstname ${AIRFLOW_ADMIN_USERNAME:-admin} --lastname ${AIRFLOW_ADMIN_USERNAME:-admin} --role Admin --password ${AIRFLOW_ADMIN_PASSWORD:-admin} --email ${AIRFLOW_ADMIN_EMAIL:-admin@example.com}
+      "
+
+  webserver:
+    <<: *airflow-common
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "
+        python /opt/airflow/scripts/minio_setup.py &&
+        airflow webserver
+      "
+
+  scheduler:
+    <<: *airflow-common
+    command: scheduler
+
+  spark:
+    build: ./spark  # PySpark + Delta Spercialized Dockerfile
+    container_name: spark
+    env_file:
+      - .env
+    environment:
+      # MinIO Configuration for Spark
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      # Spark Configuration
+      SPARK_EXECUTOR_MEMORY: ${SPARK_EXECUTOR_MEMORY:-2g}
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-1g}
+    volumes:
+      - ./spark/scripts:/app/scripts
+    ports:
+      - "8001:8000"  # FastAPI service port
+    # entrypoint: ["sh", "-c", "python /app/scripts/start_api.py & tail -f /dev/null"]
+    depends_on:
+      - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s 
+
+volumes:
+  postgres-db-volume:
+  minio-data:
