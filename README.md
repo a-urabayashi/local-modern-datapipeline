@@ -1,6 +1,6 @@
 # ETL Pipeline (WIP)
 
-**=� Work In Progress =�**
+**🚧 Work In Progress - Active Development 🚧**
 
 This directory contains the ETL (Extract, Transform, Load) pipeline for the Healthcare Performance Data Platform.
 
