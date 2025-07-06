@@ -14,6 +14,9 @@ This pipeline processes Japanese text data from HuggingFace datasets, demonstrat
 
 ## Architecture
 
+### Architecture Image
+![Data Pipeline Architecture](local_pipeline.drawio.svg)
+
 ### Core Components
 
 - **Apache Airflow** - Workflow orchestration and scheduling

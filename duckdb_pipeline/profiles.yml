@@ -1,0 +1,11 @@
+duckdb_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ./duckdb/huggingface_pipeline.duckdb  # HuggingFace pipeline用のDuckDBファイル
+      threads: 4
+      settings:
+        # Enable S3 extension for reading Delta Lake data from MinIO
+        memory_limit: '4GB'
+        max_memory: '4GB'

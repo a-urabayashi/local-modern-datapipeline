@@ -1,0 +1,89 @@
+version: 2
+
+sources:
+  # DuckDB tables loaded from Delta Lake
+  - name: raw_data
+    description: "Raw data tables loaded directly into DuckDB from Delta Lake"
+    schema: main
+    tables:
+      - name: wikipedia
+        description: "Wikipedia articles loaded from Delta Lake into DuckDB"
+        columns:
+          - name: id
+            description: "Wikipedia article ID"
+            tests:
+              - not_null
+              - unique
+          - name: title
+            description: "Article title"
+            tests:
+              - not_null
+          - name: text
+            description: "Article text content"
+            tests:
+              - not_null
+          - name: _meta_dataset_name
+            description: "Source dataset identifier"
+          - name: _meta_processed_at
+            description: "Processing timestamp"
+          - name: _dbt_extracted_at
+            description: "dbt extraction timestamp"
+          - name: _dbt_source_table
+            description: "Source table name"
+        
+      - name: fineweb
+        description: "FineWeb data loaded from Delta Lake into DuckDB"
+        columns:
+          - name: text
+            description: "Main text content in Japanese"
+            tests:
+              - not_null
+          - name: url
+            description: "Source URL of the content"
+          - name: timestamp
+            description: "Content creation/extraction timestamp"
+          - name: _meta_dataset_name
+            description: "Source dataset identifier"
+          - name: _meta_chunk_index
+            description: "Processing chunk index"
+          - name: _meta_processed_at
+            description: "Processing timestamp"
+          - name: _dbt_extracted_at
+            description: "dbt extraction timestamp"
+          - name: _dbt_source_table
+            description: "Source table name"
+          - name: _dbt_total_source_rows
+            description: "Total rows in source Delta table"
+
+  # Legacy external sources (kept for reference but not actively used)
+  - name: external_sources
+    description: "External data sources for Delta Lake and parquet files"
+    schema: main
+    tables:
+      - name: fineweb_delta
+        description: "FineWeb Delta Lake external source"
+        external:
+          location: 's3://datalake/delta/raw/fineweb/'
+          format: delta
+        columns:
+          - name: text
+            description: "Main text content"
+          - name: url
+            description: "Source URL"
+          - name: _meta_dataset_name
+            description: "Source dataset identifier"
+      
+      - name: wikipedia_delta
+        description: "Wikipedia Delta Lake external source"
+        external:
+          location: 's3://datalake/delta/raw/wikipedia/'
+          format: delta
+        columns:
+          - name: id
+            description: "Article ID"
+          - name: title
+            description: "Article title"
+          - name: text
+            description: "Article content"
+          - name: _meta_dataset_name
+            description: "Source dataset identifier"

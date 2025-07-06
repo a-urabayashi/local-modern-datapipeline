@@ -1,0 +1,44 @@
+# dbt project variables for HuggingFace pipeline with Delta Lake integration
+
+vars:
+  # Delta Lake configuration
+  use_delta_lake: true
+  delta_lake_endpoint: "localhost:9000"
+  delta_lake_bucket: "datalake"
+  
+  # Processing configuration
+  batch_id: "{{ run_started_at.strftime('%Y%m%d_%H%M%S') }}"
+  processing_timestamp: "{{ run_started_at }}"
+  
+  # Data quality thresholds
+  min_content_length: 10
+  min_japanese_char_ratio: 0.5
+  
+  # Anomaly detection results (updated with real data from DuckDB)
+  anomaly_detection_results:
+    fineweb:
+      total_records: 5
+      japanese_ratio: 1.00
+      anomaly_rate: 0.00
+      analysis_method: "production_duckdb_analysis"
+      mock_mode: false
+    wikipedia:
+      total_records: 5000
+      japanese_ratio: 1.00
+      anomaly_rate: 0.05
+      analysis_method: "production_duckdb_analysis"
+      mock_mode: false
+  
+  # S3/MinIO connection settings
+  s3_settings:
+    endpoint: "http://localhost:9000"
+    access_key: "minioadmin"
+    secret_key: "minioadmin"
+    region: "us-east-1"
+    use_ssl: false
+  
+  # Performance optimization
+  performance:
+    max_memory_gb: 4
+    threads: 4
+    enable_parallelism: true

@@ -1,0 +1,220 @@
+version: 2
+
+models:
+  - name: stg_fineweb_japanese
+    description: "Cleaned and standardized FineWeb Japanese content"
+    columns:
+      - name: content_text
+        description: "Trimmed and cleaned Japanese text content"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 1, max_value: 1000000, field: length(content_text)}
+      
+      - name: source_url
+        description: "Source URL with fallback to 'unknown'"
+        tests:
+          - not_null
+      
+      - name: source_dataset
+        description: "Source dataset identifier"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['HuggingFaceFW/fineweb-2']
+      
+      - name: processing_chunk
+        description: "Processing chunk index for tracking"
+        tests:
+          - not_null
+      
+      - name: content_length
+        description: "Length of trimmed content text"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 10, max_value: 1000000}
+      
+      - name: content_length_category
+        description: "Categorization of content by length"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['short', 'medium', 'long']
+      
+      - name: contains_japanese_chars
+        description: "Flag indicating presence of Japanese characters"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false, 0, 1]
+      
+      - name: url_domain
+        description: "Extracted domain from URL"
+      
+      - name: is_valid_content
+        description: "Flag indicating content meets basic quality criteria"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false, 0, 1]
+      
+      - name: row_rank
+        description: "Ranking for deduplication"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 1, max_value: 100}
+      
+      - name: dbt_updated_at
+        description: "Timestamp when record was processed by dbt"
+        tests:
+          - not_null
+      
+      - name: dbt_batch_id
+        description: "Batch identifier for processing tracking"
+        tests:
+          - not_null
+
+  - name: stg_wikipedia_japanese
+    description: "Cleaned and standardized Wikipedia Japanese articles"
+    columns:
+      - name: article_id
+        description: "Unique Wikipedia article identifier"
+        tests:
+          - not_null
+          - unique
+      
+      - name: article_title
+        description: "Trimmed article title"
+        tests:
+          - not_null
+          # String validation disabled for now (would need dbt_utils package)
+          # - not_empty_string
+      
+      - name: article_text
+        description: "Trimmed article text content"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 50, max_value: 2000000, field: length(article_text)}
+      
+      - name: source_dataset
+        description: "Source dataset identifier"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['wikimedia/wikipedia']
+      
+      - name: text_length
+        description: "Length of article text"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 50, max_value: 2000000}
+      
+      - name: title_length
+        description: "Length of article title"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 1, max_value: 500}
+      
+      - name: article_size_category
+        description: "Article size classification"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['stub', 'standard', 'detailed', 'comprehensive']
+      
+      - name: article_type
+        description: "Article type classification"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['article', 'disambiguation', 'list', 'category']
+      
+      - name: contains_japanese_chars
+        description: "Flag indicating presence of Japanese characters"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false, 0, 1]
+      
+      - name: is_valid_article
+        description: "Flag indicating article meets quality criteria"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false, 0, 1]
+      
+      - name: section_count_estimate
+        description: "Estimated number of sections in article"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0, max_value: 1000}
+
+  - name: stg_data_quality_checks
+    description: "Comprehensive data quality analysis for Japanese content"
+    columns:
+      - name: text
+        description: "Original text content"
+        tests:
+          - not_null
+      
+      - name: text_length
+        description: "Length of text content"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 1, max_value: 2000000}
+      
+      - name: japanese_ratio
+        description: "Ratio of Japanese characters to total characters"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 1.0}
+      
+      - name: ascii_ratio
+        description: "Ratio of ASCII characters to total characters"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 1.0}
+      
+      - name: quality_score
+        description: "Overall quality score from 0-100"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0, max_value: 100}
+      
+      - name: quality_class
+        description: "Quality classification"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['poor', 'low', 'medium', 'high']
+      
+      - name: content_type
+        description: "Content type classification"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['content', 'navigation', 'ui_element', 'date_only', 'punctuation_only']
+      
+      - name: is_anomaly
+        description: "Flag indicating if record is an anomaly"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1, true, false]
+      
+      - name: _meta_dataset_name
+        description: "Source dataset name"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['HuggingFaceFW/fineweb-2', 'wikimedia/wikipedia']

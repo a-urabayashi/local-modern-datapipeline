@@ -1,0 +1,138 @@
+version: 2
+
+models:
+  - name: mart_data_quality_summary
+    description: "Summary statistics and quality metrics for Japanese content datasets"
+    columns:
+      - name: dataset_name
+        description: "Dataset name or TOTAL for overall summary"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['HuggingFaceFW/fineweb-2', 'wikimedia/wikipedia', 'TOTAL']
+      
+      - name: total_records
+        description: "Total number of records processed"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0, max_value: 1000000000}
+      
+      - name: high_quality_pct
+        description: "Percentage of high quality records"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 100.0}
+      
+      - name: medium_quality_pct
+        description: "Percentage of medium quality records"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 100.0}
+      
+      - name: low_quality_pct
+        description: "Percentage of low quality records"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 100.0}
+      
+      - name: poor_quality_pct
+        description: "Percentage of poor quality records"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 100.0}
+      
+      - name: anomaly_rate_pct
+        description: "Percentage of anomalous records"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 100.0}
+      
+      - name: avg_japanese_ratio
+        description: "Average ratio of Japanese characters"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 1.0}
+      
+      - name: avg_quality_score
+        description: "Average quality score"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 100.0}
+      
+      - name: overall_quality_assessment
+        description: "Overall quality assessment category"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Excellent', 'Good', 'Fair', 'Poor']
+      
+      - name: quality_recommendation
+        description: "Actionable quality improvement recommendation"
+        tests:
+          - not_null
+      
+      - name: summary_generated_at
+        description: "Timestamp when summary was generated"
+        tests:
+          - not_null
+
+  - name: mart_japanese_content_summary
+    description: "Consolidated summary of Japanese content across all sources"
+    columns:
+      - name: total_content_records
+        description: "Total number of content records"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0, max_value: 1000000000}
+      
+      - name: avg_content_length
+        description: "Average content length across all sources"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0, max_value: 100000}
+      
+      - name: high_quality_content_pct
+        description: "Percentage of high quality content"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 100.0}
+
+  - name: mart_content_quality_metrics
+    description: "Detailed quality metrics for content analysis"
+    columns:
+      - name: dataset_name
+        description: "Source dataset name"
+        tests:
+          - not_null
+      
+      - name: quality_tier
+        description: "Quality tier classification"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Premium', 'Standard', 'Basic', 'Filtered']
+      
+      - name: avg_japanese_density
+        description: "Average density of Japanese characters"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 1.0}
+      
+      - name: content_diversity_score
+        description: "Score indicating content diversity"
+        tests:
+          - not_null
+          # Range validation disabled for now (would need dbt_utils package)
+          # - accepted_range: {min_value: 0.0, max_value: 100.0}
