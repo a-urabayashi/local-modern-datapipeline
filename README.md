@@ -259,13 +259,26 @@ The pipeline includes built-in data quality checks and anomaly detection through
    - Check Airflow scheduler logs
    - Verify Python dependencies are installed
 
-## Contributing
+## Cloud Implementation
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+This section outlines the managed services available for building data pipelines on AWS, Azure, and GCP. Snowflake is included as a multi-cloud, fully-managed data warehouse solution with high-performance query capabilities.
+
+![AWS Architecture](aws_architecture.drawio.svg)
+
+### AWS Services
+- **Data Warehouse**
+  - Amazon Redshift or Snowflake
+- **Data Lake**
+  - S3
+  - Delta Lake
+- **Pipeline Orchestrator**
+  - MWAA (Managed Workflows for Apache Airflow) or Apache Airflow on ECS
+- **Big Data Processing**
+  - EMR (Elastic MapReduce) or AWS Glue
+- **ETL Tool**
+  - dbt Cloud
+- **Containerization**
+  - ECS / EKS
 
 ## License
 
