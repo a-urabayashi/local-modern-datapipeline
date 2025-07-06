@@ -1,4 +1,5 @@
 Welcome to your new dbt project!
+## This dbt project is 🚧 WIP
 
 ### Using the starter project
 

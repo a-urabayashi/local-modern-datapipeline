@@ -84,6 +84,101 @@ docker-compose up -d
    - **Airflow UI**: http://localhost:8080 (admin/admin)
    - **MinIO Console**: http://localhost:9001 (minioadmin/minioadmin123)
 
+### Detailed Startup Instructions
+
+#### Apache Airflow Setup
+1. Initialize Apache Airflow:
+```bash
+docker compose up airflow-init
+```
+
+2. Start Apache Airflow services:
+```bash
+docker compose up
+```
+
+3. Access Airflow Web UI:
+   - Navigate to `localhost:8080`
+   - Login credentials:
+     ```text
+     username: admin
+     password: admin
+     ```
+
+4. Start the pipeline:
+   - Click on `local_data_processing_fastapi` DAG
+   - Click the play/start button to trigger execution
+
+#### Memory-Optimized Setup
+For systems with limited memory:
+```bash
+# Install dependencies
+uv sync
+
+# Apply memory-optimized Docker configuration
+docker compose -f docker-compose.yml -f docker-compose.override.yml up airflow-init
+
+# Start services with memory limits
+docker compose -f docker-compose.yml -f docker-compose.override.yml up
+```
+
+#### Pipeline Execution Modes
+Configure execution patterns by setting the `EXECUTION_MODE` environment variable:
+
+```bash
+# 1. Sample mode (test, 5-10 minutes)
+export EXECUTION_MODE=memory_optimized
+# Run local_data_processing DAG in Airflow UI
+
+# 2. Full processing (Conservative, ~12 hours)
+export EXECUTION_MODE=conservative  
+# Run local_data_processing DAG in Airflow UI
+
+# 3. dbt standalone execution
+cd duckdb_pipeline
+dbt run --vars '{"batch_id": "20250623"}'
+dbt test  # Run comprehensive test suite
+dbt docs generate
+```
+
+#### Accessing DuckDB
+Multiple methods to access the DuckDB database:
+
+```bash
+# 1. Via Airflow container using DuckDB CLI
+docker compose exec webserver duckdb /opt/airflow/duckdb_pipeline/duckdb/huggingface_pipeline.duckdb
+
+# 2. Via Python in Airflow container
+docker compose exec webserver python -c "
+import duckdb
+conn = duckdb.connect('/opt/airflow/duckdb_pipeline/duckdb/huggingface_pipeline.duckdb')
+print('Available tables:', [t[0] for t in conn.execute('SHOW TABLES;').fetchall()])
+conn.close()
+"
+
+# 3. Using local DuckDB CLI (requires local duckdb installation)
+duckdb duckdb_pipeline/duckdb/huggingface_pipeline.duckdb
+
+# Sample queries in DuckDB CLI:
+# .tables                                      # List all tables
+# SELECT COUNT(*) FROM wikipedia;              # Wikipedia record count
+# SELECT COUNT(*) FROM fineweb;                # FineWeb record count
+# SELECT * FROM mart_japanese_content_summary; # Japanese content summary
+# .quit                                        # Exit CLI
+```
+
+#### MinIO Access
+1. Access MinIO Console:
+   - Navigate to `localhost:9001`
+   - Login credentials:
+     ```text
+     username: minioadmin
+     password: minioadmin
+     ```
+
+### Data Quality and Anomaly Detection
+The pipeline includes built-in data quality checks and anomaly detection through dbt models and Python scripts integrated into the DAG. Currently, Japanese language quality checks are implemented within the dbt transformation process.
+
 ### Running the Pipeline
 
 1. Open Airflow UI at http://localhost:8080
